@@ -1,10 +1,8 @@
-# Big-Data-Project-II-IFEBY310
+# Analysis of Amazon Bike - Big-Data-IFEBY310
 
-A simple big data project for a university course.
+A big data project for a university course.
 
 ## Execution
-
-## Installation
 
 ## Sources
 
