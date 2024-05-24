@@ -1,4 +1,4 @@
-# Analysis of Citibikes - (Big-Data IFEBY310)
+# Analysis of Citibikes - Big Data
 
 Analysis of the *New York Shared Bike systems* (**Citibikes**) dataset for a University Course.
 
