@@ -1,6 +1,6 @@
 # Analysis of Citibikes - Big Data
 
-Analysis of the *New York Shared Bike systems* (**Citibikes**) dataset for a University Course.
+Analysis of the *NYC Shared Bike systems* (**Citibikes**) dataset for a University Course.
 
 ## Installation
 
@@ -26,3 +26,4 @@ Execute the jupyter notebook `report.ipynb`
     - [NYC Bike feeds data](https://gbfs.citibikenyc.com/gbfs/2.3/gbfs.json)
     - [Station status feed](https://www.nyc.gov/html/dot/html/about/datafeeds.shtml#Bikes)
     - [Bike routes](https://data.cityofnewyork.us/Transportation/New-York-City-Bike-Routes/7vsa-caz7)
+    - OpenStreetMap map of New York City
