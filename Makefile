@@ -12,9 +12,8 @@ update_web: render
 	cp -r report/_output/* docs
 
 baked_graphics_data_to_web:
-	mkdir report/resources
-	mkdir report/resources/graphics_data
-	cp -r computed/graphics report/resources/graphics_data
+	mkdir -p report/resources
+	cp -r computed/graphics report/resources
 
 preview_web:
 	cd report; quarto preview

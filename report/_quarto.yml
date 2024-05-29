@@ -6,8 +6,8 @@ book:
   title : "Analysis of Citibikes - Big Data"
   chapters:
     - index.qmd
-    - download.qmd
-    - cleaning.qmd
+    - etl.qmd
+    - analysis.qmd
     - monitoring.qmd
     - spatial_informations.qmd
   downloads: [pdf]
@@ -17,6 +17,10 @@ format:
     theme: cosmo
     toc: true
     number-sections: true
+    grid:
+      body-width: 1030px
+      # sidebar-width: 200px
+      # margin-width: 70px  
   pdf:
     theme: cosmo
     title: "Report"

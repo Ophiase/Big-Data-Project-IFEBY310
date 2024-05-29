@@ -1,0 +1,255 @@
+---
+title: Analysis and Graphics
+
+---
+
+```{python}
+#| echo: false
+import shutil
+import os
+import requests
+import pandas as pd
+import numpy as np
+import re
+import zipfile
+from functools import reduce
+import math
+import json
+
+import warnings
+import logging
+warnings.simplefilter(action='ignore', category=FutureWarning)
+logging.getLogger("pyspark").setLevel(logging.ERROR)
+# os.environ["PYSPARK_SUBMIT_ARGS"] = "--driver-memory 2g"
+
+
+import seaborn as sns
+import altair as alt
+import plotly
+import plotly.express as px
+# import plotly.graph_objects as go
+
+import matplotlib.pyplot as plt
+from plotly.subplots import make_subplots
+import plotly.graph_objs as go
+
+from geopy.geocoders import Nominatim
+from urllib.request import urlopen
+```
+
+```{python}
+#| echo: false
+def visualize_trip_distance_over_something(metric, metric_name, df_1, df_2=None, description_1="", description_2="", min_factor=0.99):
+    def specific_chart(df, description_bonus):
+        min_value = df['avg_distance_km'].min() * min_factor
+        max_value = df['avg_distance_km'].max() * 1.02
+
+        return alt.Chart(df).mark_bar().encode(
+                x=alt.X(metric, title=metric_name, sort=None),
+                y=alt.Y('avg_distance_km:Q', title='Average distance (km)',
+                        scale=alt.Scale(domain=(min_value, max_value))),
+                color=alt.Color(metric, title=metric_name),
+                tooltip=['avg_distance_km', metric]
+            ).properties(
+                title= f'Average trip distance per {metric_name} {description_bonus}',
+                width= 250,
+                height= 200
+            )
+        
+
+    if df_2 is None:
+        chart = alt.hconcat(specific_chart(df_1, description_1))
+    else :
+        chart = alt.hconcat(
+            specific_chart(df_1, description_1),
+            specific_chart(df_2, description_2)
+        )
+
+    chart = chart.configure_axis(
+        labelAngle=45,
+        titleFontSize=12,
+        labelFontSize=10,
+        labelOverlap='parity'
+    ).configure_legend(
+        titleFontSize=12,
+        labelFontSize=10
+    )
+
+    return chart
+
+```
+
+```{python}
+#| echo: false
+def visualize_number_of_pickup_drop(ax, df, date):
+    sns.histplot(df["count"], bins=30, kde=True, ax=ax)
+    ax.set_xlabel("Number of couple (start_station_id, end_station_id) during " + date)
+    ax.set_ylabel("Number of occurrences the couple")
+    ax.set_title("(start_station_id, end_station_id)")
+
+def visualize_top_10_pickup_dropoff(ax, top_10_df, date):
+    sns.barplot(x="count", y="station_pair", data=top_10_df, dodge=False, ax=ax)
+    ax.set_xlabel("Number of Occurrences")
+    ax.set_ylabel("Station Pair")
+    ax.set_title("Most Frequent Start-End Station Pairs during " + date)
+    
+    labels = [item.get_text() for item in ax.get_yticklabels()]
+    wrapped_labels = ["\n".join(label.split(" -> ")) for label in labels]
+    ax.set_yticklabels(wrapped_labels)
+
+def full_visualization(df_reduce_pickup_dropoff, df_top_10_pickup_dropoff, date):
+    fig, axes = plt.subplots(1, 2, figsize=(9, 4))
+    visualize_number_of_pickup_drop(axes[0], df_reduce_pickup_dropoff, date)
+    visualize_top_10_pickup_dropoff(axes[1], df_top_10_pickup_dropoff, date)
+    
+    plt.tight_layout()
+    plt.show()
+```
+
+```{python}
+#| echo: false
+
+def full_visualization_over_the_week(metric, metric_name, df_1, df_2, description_1="", description_2=""):
+    def specific_chart(df, description_bonus):
+        min_value = 0 # df['avg_distance_km'].min() * 0.80
+        max_value = df['avg_distance_km'].max() * 1.02
+
+        return alt.Chart(df).mark_bar().encode(
+                x=alt.X('hour_of_the_week:N', title='Hour of the week', sort=None),
+                y=alt.Y(metric, title=metric_name), #scale=alt.Scale(domain=(min_value, max_value))),
+                color=alt.Color('day_of_the_week', title='Day of the week'),
+                tooltip=[metric, 'day_of_the_week', 'hour_of_the_day']
+            ).properties(
+                title= f'{metric_name} per hour of the week ' + description_bonus,
+                width= 250,
+                height= 200
+            )
+        
+    chart = alt.hconcat(
+        specific_chart(df_1, description_1),
+        specific_chart(df_2, description_2)
+    ).configure_axis(
+        labelAngle=45
+    )
+
+    chart = chart.configure_axis(
+        titleFontSize=12,
+        labelFontSize=10,
+        labelOverlap='parity'
+    ).configure_legend(
+        titleFontSize=12,
+        labelFontSize=10
+    )
+
+    return chart
+
+full_visualization_over_the_week_1822 = lambda x, y : full_visualization_over_the_week(x, y, data_phw_2018, data_phw_2022, "(2018)", "(2022)")
+```
+
+```{python}
+#| echo: false
+
+def load_graphic_data(graphic_name) :
+    file_name = os.path.join("resources", "graphics", f"{graphic_name}.h5")
+
+    return pd.read_hdf(file_name, key='df')
+
+data_phw_2018 = load_graphic_data("data_phw_2018")
+data_phw_2022 = load_graphic_data("data_phw_2022")
+reduce_pickup_dropoff_2018 = load_graphic_data("reduce_pickup_dropoff_2018")
+reduce_pickup_dropoff_2022 = load_graphic_data("reduce_pickup_dropoff_2022")
+top_10_pickup_dropoff_2018 = load_graphic_data("top_10_pickup_dropoff_2018")
+top_10_pickup_dropoff_2022 = load_graphic_data("top_10_pickup_dropoff_2022")
+trip_distance_over_ages_2018 = load_graphic_data("trip_distance_over_ages_2018")
+trip_distance_over_ages_post_covid = load_graphic_data("trip_distance_over_ages_post_covid")
+trip_distance_over_bikes_post_covid = load_graphic_data("trip_distance_over_bikes_post_covid")
+trip_distance_over_genders_2018 = load_graphic_data("trip_distance_over_genders_2018")
+trip_distance_over_genders_post_covid = load_graphic_data("trip_distance_over_genders_post_covid")
+trip_distance_over_week_2018 = load_graphic_data("trip_distance_over_week_2018")
+trip_distance_over_week_2022 = load_graphic_data("trip_distance_over_week_2022")
+```
+
+### Trip distance by day
+
+```{python}
+#| echo: false
+visualize_trip_distance_over_something(
+    "day_of_the_week", "day",
+    trip_distance_over_week_2018, trip_distance_over_week_2022, 
+    " (2018)", " (2022)"
+).interactive()
+```
+
+###  Number of trips for each pickup/dropoff location couple
+
+```{python}
+#| echo: false
+full_visualization(reduce_pickup_dropoff_2018, top_10_pickup_dropoff_2018, "2018")
+```
+
+```{python}
+#| echo: false
+full_visualization(reduce_pickup_dropoff_2022, top_10_pickup_dropoff_2022, "2022")
+```
+
+### Trip distance distribution for gender
+
+```{python}
+#| echo: false
+visualize_trip_distance_over_something(
+    "gender", "Gender",
+    trip_distance_over_genders_2018, trip_distance_over_genders_post_covid,
+    " (2018)", " (post covid)", min_factor=0.0
+    ).interactive()
+```
+
+### Trip distance distribution for age ranges
+
+```{python}
+#| echo: false
+visualize_trip_distance_over_something(
+    "age_range", "Age Range",
+    trip_distance_over_ages_2018, trip_distance_over_ages_post_covid,
+    " (2018) ", " (post covid) ", min_factor=0.0
+    ).interactive()
+
+```
+
+### Trip distance distribution for different kind of bikes
+
+```{python}
+#| echo: false
+visualize_trip_distance_over_something(
+    "rideable_type", "Type of bike",
+    trip_distance_over_bikes_post_covid, None,
+    " (after covid) ", min_factor=0.0
+    ).interactive()
+```
+
+### The number of pickups/docks
+
+```{python}
+#| echo: false
+full_visualization_over_the_week_1822("distinct_station_pairs", "Distinct Station Pairs")
+```
+
+### The average distance
+
+```{python}
+#| echo: false
+full_visualization_over_the_week_1822("avg_distance_km", "Average distance (km)")
+```
+
+### The average trip duration
+
+```{python}
+#| echo: false
+full_visualization_over_the_week_1822("avg_trip_duration", "Average trip duration")
+```
+
+### The average number of ongoing trips
+
+```{python}
+#| echo: false
+full_visualization_over_the_week_1822("row_count", "Number of ongoing trips")
+```

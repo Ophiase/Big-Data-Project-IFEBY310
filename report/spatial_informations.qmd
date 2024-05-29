@@ -1,3 +1,80 @@
 ---
 title: Spatial Informations
 ---
+
+```{python}
+#| echo: false
+
+import os
+import pandas as pd
+
+import warnings
+import logging
+warnings.simplefilter(action='ignore', category=FutureWarning)
+logging.getLogger("pyspark").setLevel(logging.ERROR)
+# os.environ["PYSPARK_SUBMIT_ARGS"] = "--driver-memory 2g"
+
+import plotly.express as px
+```
+
+```{python}
+#| echo: false
+def load_graphic_data(graphic_name) :
+    file_name = os.path.join("resources", "graphics", f"{graphic_name}.h5")
+
+    return pd.read_hdf(file_name, key='df')
+
+heatmap_data_2018 = load_graphic_data("heatmap_data_2018")
+interactive_map_data_2018 = load_graphic_data("interactive_map_data_2018")
+```
+
+## HeatMap
+
+```{python}
+#| echo: false
+def display_heatmap(heatmap_data):
+    heatmap_data = heatmap_data.pivot(index='start_station_id', columns='end_station_id', values='trip_count')
+    return px.imshow(heatmap_data, title="Heatmap of Start/End stations in 2018", labels=dict(x="End Station", y="Start Station", color="Number of Trips"))
+
+display_heatmap(heatmap_data_2018)
+```
+
+## Interactive map
+
+```{python}
+#| echo: false
+
+def display_interactive_map(df, bonus=""):
+    df = df.sort_values("hour")
+    fig = px.density_mapbox(df, lat='lat', lon='lng', z='count', radius=30,
+                            center=dict(lat=40.7128, lon=-74.0060), zoom=10,
+                            mapbox_style="carto-positron", animation_frame='hour',
+                            range_color=[0, df['count'].max()*1.0])
+
+    fig.update_layout(
+        title="Citibikes Station Frequency Heatmap of New York City by Hour" + bonus,
+        updatemenus=[dict(
+            type="buttons",
+            showactive=False,
+            buttons=[
+                dict(label="Play",
+                     method="animate",
+                     args=[None, dict(frame=dict(duration=500, redraw=True), fromcurrent=True)]),
+                dict(label="Pause",
+                     method="animate",
+                     args=[[None], dict(frame=dict(duration=0, redraw=False), mode="immediate", fromcurrent=True)])
+            ]
+        )],
+        sliders = [dict(
+            active=0,
+            currentvalue={"prefix": "Hour: "},
+            pad={"t": 1}
+        )],
+        height=700, width=700 # margin=dict(l=0, r=0, t=10.0, b=0)
+        
+    )
+
+    fig.show(frame=0)
+
+display_interactive_map(interactive_map_data_2018, " (2018)")
+```
