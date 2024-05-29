@@ -6,7 +6,10 @@ book:
   title : "Analysis of Citibikes - Big Data"
   chapters:
     - index.qmd
-    - analysis.qmd
+    - download.qmd
+    - cleaning.qmd
+    - monitoring.qmd
+    - spatial_informations.qmd
   downloads: [pdf]
 
 format:
