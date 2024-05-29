@@ -1,13 +1,14 @@
 render:
 	cd report; quarto render
 
-update_pdf: render
-	cp report/_output/*.pdf .
-	xdg-open XXX_YYY_report.pdf
+# pdf format, hardly compatible with altair
+# update_pdf: render
+# 	cp report/_output/*.pdf .
+# 	xdg-open XXX_YYY_report.pdf
 
 update_web: render
-	cp report/_output/*.pdf .
 	rm -rf docs
+# cp report/_output/*.pdf .
 	mkdir -p docs
 	cp -r report/_output/* docs
 

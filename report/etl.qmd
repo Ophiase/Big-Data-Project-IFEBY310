@@ -6,8 +6,9 @@ engine: knitr
 
 ## Extract
 
-```{python}
+```{python, results='hide'}
 #| echo: false
+#| 
 
 import shutil
 import os

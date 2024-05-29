@@ -2,6 +2,18 @@
 
 Analysis of the *NYC Shared Bike systems* (**Citibikes**) dataset for a University Course.
 
+A precompiled report is availible at : [report]()
+
+You can also run the precompiled report locally :
+```bash
+# precompiled version
+cd docs
+python3 -m http.server 8000 # create the server
+xdg-open http://localhost:8000/ # open the local server
+
+make preview_web # with quarto
+```
+
 ## Installation
 
 Python notebook dependencies : 

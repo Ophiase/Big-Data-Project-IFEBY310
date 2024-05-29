@@ -10,7 +10,7 @@ book:
     - analysis.qmd
     - monitoring.qmd
     - spatial_informations.qmd
-  downloads: [pdf]
+  # downloads: [pdf]
 
 format:
   html:
@@ -21,12 +21,13 @@ format:
       body-width: 1030px
       # sidebar-width: 200px
       # margin-width: 70px  
-  pdf:
-    theme: cosmo
-    title: "Report"
-    toc: true
-    geometry:
-      - top=18.4mm
-      - left=25.4mm
-      - right=25.4mm
-      - bottom=25.4mm
+  # pdf format hardly compatible with altair
+  # pdf:
+  #   theme: cosmo
+  #   title: "Report"
+  #   toc: true
+  #   geometry:
+  #     - top=18.4mm
+  #     - left=25.4mm
+  #     - right=25.4mm
+  #     - bottom=25.4mm
