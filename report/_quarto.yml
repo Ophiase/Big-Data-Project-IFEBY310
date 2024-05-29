@@ -1,0 +1,25 @@
+project:
+  output-dir: _output
+  type: book
+
+book:
+  title : "Analysis of Citibikes - Big Data"
+  chapters:
+    - index.qmd
+    - analysis.qmd
+  downloads: [pdf]
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    number-sections: true
+  pdf:
+    theme: cosmo
+    title: "Report"
+    toc: true
+    geometry:
+      - top=18.4mm
+      - left=25.4mm
+      - right=25.4mm
+      - bottom=25.4mm
