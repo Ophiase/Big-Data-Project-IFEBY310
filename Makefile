@@ -11,5 +11,10 @@ update_web: render
 	mkdir -p docs
 	cp -r report/_output/* docs
 
+baked_graphics_data_to_web:
+	mkdir report/resources
+	mkdir report/resources/graphics_data
+	cp -r computed/graphics report/resources/graphics_data
+
 preview_web:
 	cd report; quarto preview
