@@ -1,6 +1,7 @@
 ---
 title: Analysis and Graphics
-
+code-fold: true
+engine: knitr
 ---
 
 ```{python}
@@ -39,6 +40,8 @@ from urllib.request import urlopen
 
 ```{python}
 #| echo: false
+#| appendix: true
+
 def visualize_trip_distance_over_something(metric, metric_name, df_1, df_2=None, description_1="", description_2="", min_factor=0.99):
     def specific_chart(df, description_bonus):
         min_value = df['avg_distance_km'].min() * min_factor
@@ -81,6 +84,8 @@ def visualize_trip_distance_over_something(metric, metric_name, df_1, df_2=None,
 
 ```{python}
 #| echo: false
+#| appendix: true
+
 def visualize_number_of_pickup_drop(ax, df, date):
     sns.histplot(df["count"], bins=30, kde=True, ax=ax)
     ax.set_xlabel("Number of couple (start_station_id, end_station_id) during " + date)
@@ -108,6 +113,7 @@ def full_visualization(df_reduce_pickup_dropoff, df_top_10_pickup_dropoff, date)
 
 ```{python}
 #| echo: false
+#| appendix: true
 
 def full_visualization_over_the_week(metric, metric_name, df_1, df_2, description_1="", description_2=""):
     def specific_chart(df, description_bonus):
@@ -147,8 +153,6 @@ full_visualization_over_the_week_1822 = lambda x, y : full_visualization_over_th
 ```
 
 ```{python}
-#| echo: false
-
 def load_graphic_data(graphic_name) :
     file_name = os.path.join("resources", "graphics", f"{graphic_name}.h5")
 
@@ -169,7 +173,7 @@ trip_distance_over_week_2018 = load_graphic_data("trip_distance_over_week_2018")
 trip_distance_over_week_2022 = load_graphic_data("trip_distance_over_week_2022")
 ```
 
-### Trip distance by day
+## Trip distance by day
 
 ```{python}
 #| echo: false
@@ -180,7 +184,7 @@ visualize_trip_distance_over_something(
 ).interactive()
 ```
 
-###  Number of trips for each pickup/dropoff location couple
+##  Number of trips for each pickup/dropoff location couple
 
 ```{python}
 #| echo: false
@@ -192,7 +196,7 @@ full_visualization(reduce_pickup_dropoff_2018, top_10_pickup_dropoff_2018, "2018
 full_visualization(reduce_pickup_dropoff_2022, top_10_pickup_dropoff_2022, "2022")
 ```
 
-### Trip distance distribution for gender
+## Trip distance distribution for gender
 
 ```{python}
 #| echo: false
@@ -203,7 +207,7 @@ visualize_trip_distance_over_something(
     ).interactive()
 ```
 
-### Trip distance distribution for age ranges
+## Trip distance distribution for age ranges
 
 ```{python}
 #| echo: false
@@ -215,7 +219,7 @@ visualize_trip_distance_over_something(
 
 ```
 
-### Trip distance distribution for different kind of bikes
+## Trip distance distribution for different kind of bikes
 
 ```{python}
 #| echo: false
@@ -226,30 +230,41 @@ visualize_trip_distance_over_something(
     ).interactive()
 ```
 
-### The number of pickups/docks
+## The number of pickups/docks
 
 ```{python}
 #| echo: false
 full_visualization_over_the_week_1822("distinct_station_pairs", "Distinct Station Pairs")
 ```
 
-### The average distance
+## The average distance
 
 ```{python}
 #| echo: false
 full_visualization_over_the_week_1822("avg_distance_km", "Average distance (km)")
 ```
 
-### The average trip duration
+## The average trip duration
 
 ```{python}
 #| echo: false
 full_visualization_over_the_week_1822("avg_trip_duration", "Average trip duration")
 ```
 
-### The average number of ongoing trips
+## The average number of ongoing trips
 
 ```{python}
 #| echo: false
 full_visualization_over_the_week_1822("row_count", "Number of ongoing trips")
+```
+
+## Appendix {#appendix}
+
+Graphics were made with the following code :
+
+```{r}
+#| ref.label: !expr knitr::all_labels(appendix==TRUE)
+#| echo: true
+#| eval: false
+#| code-fold: true
 ```

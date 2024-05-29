@@ -1,5 +1,6 @@
 ---
 title: Spatial Informations
+code-fold: true
 ---
 
 ```{python}
@@ -19,6 +20,7 @@ import plotly.express as px
 
 ```{python}
 #| echo: false
+
 def load_graphic_data(graphic_name) :
     file_name = os.path.join("resources", "graphics", f"{graphic_name}.h5")
 
@@ -31,7 +33,6 @@ interactive_map_data_2018 = load_graphic_data("interactive_map_data_2018")
 ## HeatMap
 
 ```{python}
-#| echo: false
 def display_heatmap(heatmap_data):
     heatmap_data = heatmap_data.pivot(index='start_station_id', columns='end_station_id', values='trip_count')
     return px.imshow(heatmap_data, title="Heatmap of Start/End stations in 2018", labels=dict(x="End Station", y="Start Station", color="Number of Trips"))
@@ -42,8 +43,6 @@ display_heatmap(heatmap_data_2018)
 ## Interactive map
 
 ```{python}
-#| echo: false
-
 def display_interactive_map(df, bonus=""):
     df = df.sort_values("hour")
     fig = px.density_mapbox(df, lat='lat', lon='lng', z='count', radius=30,
@@ -70,7 +69,7 @@ def display_interactive_map(df, bonus=""):
             currentvalue={"prefix": "Hour: "},
             pad={"t": 1}
         )],
-        height=700, width=700 # margin=dict(l=0, r=0, t=10.0, b=0)
+        height=700, width=700
         
     )
 
