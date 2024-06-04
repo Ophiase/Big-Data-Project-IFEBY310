@@ -50,12 +50,28 @@ from urllib.request import urlopen
 ```
 
 ```{python}
+# At the first execution those options should all be set to True.
+# Once those operations are performed, you can rely on the baked version and disable them.
+#
+# If you already have the https://s3.amazonaws.com/tripdata/{year}-citibike-tripdata.zip
+# You can directly disable ENABLE_DOWNLOAD and put the zip files into data
+#
+# For the graphics, we do not use the star schema. 
+# Thus if you disable "DO_NOT_IGNORE_STAR_SCHEMA", 
+# then "ENABLE_COMPUTER" and "ENABLE_COMPUTE_EVENT" will be ignored.
+
+# EXTRACT
 ENABLE_DOWNLOAD = False
 ENABLE_UNZIP = False
+
+# TRANSFORM
 ENABLE_COMPUTE_ZIP_TO_PARQUET = False
+DO_NOT_IGNORE_STAR_SCHEMA = False
 ENABLE_COMPUTE_DIMENSION = False
 ENABLE_COMPUTE_EVENT = False
-ENABLE_SAVE_GRAPHICS_DATA = False
+
+# AGGREGATE
+ENABLE_COMPUTE_GRAPHICS_DATA = False 
 ```
 
 We download the data from `https://s3.amazonaws.com/tripdata/{year}-citibike-tripdata.zip`
@@ -356,6 +372,13 @@ def csv_to_parquet_part_1(csv_file) :
     df = spark.read.csv(csv_file, header=True, inferSchema=True)
     return csv_o_process(df)
 
+# Lower case O. part (with wrong the date format)
+def csv_to_parquet_part_4(csv_file) :
+    df = spark.read.csv(csv_file, header=True, inferSchema=True)
+    df = df.withColumn("starttime", F.to_timestamp(df.starttime, "M/d/yyyy H:mm:ss")) \
+       .withColumn("stoptime", F.to_timestamp(df.stoptime, "M/d/yyyy H:mm:ss"))
+    return csv_o_process(df)
+
 # Upper case O. part
 
 def csv_to_parquet_part_2(csv_file) :
@@ -408,6 +431,7 @@ Partition on `"month(started_at)"` and `"start_station_id"` takes too much time.
 
 schedule = [
     ("201401-citibike-tripdata_1.csv", 1),
+    ("201409-citibike-tripdata_1.csv", 4),
     ("201610-citibike-tripdata_1.csv", 2),
     ("201704-citibike-tripdata.csv_1.csv", 1),
     ("202102-citibike-tripdata_1.csv", 3)
@@ -427,7 +451,7 @@ def process_csv_files(csv_files, schedule):
             print(f"{csv_file} | {schedule_pointer} : {schedule[schedule_pointer]}")
 
         schedule_mode = schedule[schedule_pointer][1]
-        target_function = [csv_to_parquet_part_1, csv_to_parquet_part_2, csv_to_parquet_part_3][schedule_mode - 1]
+        target_function = [csv_to_parquet_part_1, csv_to_parquet_part_2, csv_to_parquet_part_3, csv_to_parquet_part_4][schedule_mode - 1]
 
         df_to_add = target_function(csv_path)
         df_buffer.append(df_to_add)
@@ -446,7 +470,7 @@ def process_csv_files(csv_files, schedule):
     parquet_path = os.path.join(
         'computed', 'travels', f'travels.parquet')
 
-    df \
+    df.write \
         .partitionBy("year") \
         .mode("overwrite").parquet(parquet_path)
         # .write.option("maxRecordsPerFile", 70000000) \
@@ -459,7 +483,7 @@ if ENABLE_COMPUTE_ZIP_TO_PARQUET :
 
 
 ```{python}
-if ENABLE_COMPUTE_DIMENSION:
+if DO_NOT_IGNORE_STAR_SCHEMA and ENABLE_COMPUTE_DIMENSION:
     df_dimension = df.select("start_station_id", "start_station_name", 
                                     "start_lat", "start_lng") \
                             .withColumnRenamed("start_station_id", "station_id") \
@@ -493,7 +517,7 @@ if ENABLE_COMPUTE_DIMENSION:
 ```
 
 ```{python}
-if ENABLE_COMPUTE_EVENT :
+if DO_NOT_IGNORE_STAR_SCHEMA and ENABLE_COMPUTE_EVENT :
     def make_event_table(df_event):
         columns = [
             "start_station_name", "start_lng", "start_lat", 
@@ -507,6 +531,11 @@ if ENABLE_COMPUTE_EVENT :
 
     df_event = make_event_table(df)
     df_event.describe()
+
+    df_event.write \
+                .partitionBy("year") \
+                .mode("overwrite") \
+                .parquet(os.path.join("computed", "event", "event.parquet"))
 ```
 
 ## Load
